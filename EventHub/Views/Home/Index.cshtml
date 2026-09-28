@@ -1,8 +1,62 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center py-5">
+    <h1 class="display-4 fw-bold">Welcome to EventHub</h1>
+
+    <p class="lead mt-3">
+        Discover events, connect with people, and register for events that interest you.
+    </p>
+
+    <div class="mt-4">
+        <a asp-controller="Events"
+           asp-action="Index"
+           class="btn btn-dark btn-lg me-2">
+            Explore Events
+        </a>
+
+        <a asp-controller="Account"
+           asp-action="Register"
+           class="btn btn-outline-dark btn-lg">
+            Create Account
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <h4>Discover Events</h4>
+                <p class="text-muted">
+                    Browse upcoming events and find activities that match your interests.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <h4>Register Easily</h4>
+                <p class="text-muted">
+                    Register for events and keep track of the events you plan to attend.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <h4>Manage Events</h4>
+                <p class="text-muted">
+                    Organizers can create events and manage registered attendees.
+                </p>
+            </div>
+        </div>
+    </div>
+
 </div>
