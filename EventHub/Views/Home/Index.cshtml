@@ -1,26 +1,25 @@
-﻿@{
-    ViewData["Title"] = "Home";
-}
+﻿<div class="row justify-content-center mt-5">
+    <div class="col-lg-10">
 
-<div class="text-center py-5">
-    <h1 class="display-4 fw-bold">Welcome to EventHub</h1>
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">
+                Everything You Need to Discover and Manage Events
+            </h2>
 
-    <p class="lead mt-3">
-        Discover events, connect with people, and register for events that interest you.
-    </p>
+            <p class="lead text-muted mt-3">
+                EventHub is an event management platform designed to make it
+                easier for people to discover, register for, and keep track of
+                events, while giving organizers the tools they need to create
+                and manage successful events.
+            </p>
 
-    <div class="mt-4">
-        <a asp-controller="Events"
-           asp-action="Index"
-           class="btn btn-dark btn-lg me-2">
-            Explore Events
-        </a>
+            <p class="text-muted">
+                Whether you are looking for an event to attend or planning an
+                event for a group, organization, school, or community,
+                EventHub provides a simple place to manage the entire experience.
+            </p>
+        </div>
 
-        <a asp-controller="Account"
-           asp-action="Register"
-           class="btn btn-outline-dark btn-lg">
-            Create Account
-        </a>
     </div>
 </div>
 
@@ -28,35 +27,98 @@
 
     <div class="col-md-4">
         <div class="card h-100 shadow-sm">
-            <div class="card-body text-center">
+            <div class="card-body text-center p-4">
+
                 <h4>Discover Events</h4>
+
                 <p class="text-muted">
-                    Browse upcoming events and find activities that match your interests.
+                    Browse upcoming events and find activities that match your
+                    interests. Explore event details such as the date, location,
+                    description, and available capacity before deciding to attend.
                 </p>
+
             </div>
         </div>
     </div>
 
     <div class="col-md-4">
         <div class="card h-100 shadow-sm">
-            <div class="card-body text-center">
+            <div class="card-body text-center p-4">
+
                 <h4>Register Easily</h4>
+
                 <p class="text-muted">
-                    Register for events and keep track of the events you plan to attend.
+                    Found an event you like? Register easily and keep track of
+                    the events you plan to attend. Your dashboard gives you a
+                    convenient place to keep up with your event registrations.
                 </p>
+
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center">
-                <h4>Manage Events</h4>
-                <p class="text-muted">
-                    Organizers can create events and manage registered attendees.
-                </p>
+    @if (User.IsInRole("Organizer"))
+    {
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center p-4">
+
+                    <h4>Manage Events</h4>
+
+                    <p class="text-muted">
+                        Organizers can create events, provide important event
+                        information, manage event details, and keep track of
+                        people registered for their events.
+                    </p>
+
+                    <a asp-controller="Events"
+                       asp-action="Create"
+                       class="btn btn-dark">
+                        Create an Event
+                    </a>
+
+                </div>
             </div>
         </div>
-    </div>
+    }
 
+</div>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-lg-10">
+
+        <div class="text-center py-4">
+
+            <h3 class="fw-bold">
+                One Platform for Your Event Experience
+            </h3>
+
+            <p class="text-muted mt-3">
+                From discovering an upcoming event to managing registrations,
+                EventHub brings the important parts of the event experience
+                together in one place.
+            </p>
+
+            <div class="mt-4">
+
+                <a asp-controller="Events"
+                   asp-action="Index"
+                   class="btn btn-dark btn-lg me-2">
+                    Explore Events
+                </a>
+
+                @if (!User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Account"
+                       asp-action="Register"
+                       class="btn btn-outline-dark btn-lg">
+                        Get Started
+                    </a>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
 </div>

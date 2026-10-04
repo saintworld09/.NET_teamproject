@@ -3,68 +3,152 @@
 }
 
 <div class="text-center mb-5">
-    <h1 class="display-5 fw-bold">EventHub Dashboard</h1>
+    <h1 class="display-5 fw-bold">
+        @if (User.IsInRole("Organizer"))
+        {
+            <span>Organizer Dashboard</span>
+        }
+        else
+        {
+            <span>Attendee Dashboard</span>
+        }
+    </h1>
+
     <p class="lead">
-        Manage your events and keep track of your event registrations.
+        @if (User.IsInRole("Organizer"))
+        {
+            <span>
+                Manage your events and keep track of your registered attendees.
+            </span>
+        }
+        else
+        {
+            <span>
+                Keep track of your event registrations and upcoming events.
+            </span>
+        }
     </p>
 </div>
 
-<div class="row g-4">
+@if (User.IsInRole("Organizer"))
+{
+    <div class="row g-4">
 
-    <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm text-center">
-            <div class="card-body">
-                <h5 class="card-title">My Events</h5>
-                <h2 class="display-6 fw-bold">0</h2>
-                <p class="text-muted">
-                    Events you have created.
-                </p>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">My Events</h5>
+
+                    <h2 class="display-6 fw-bold">0</h2>
+
+                    <p class="text-muted">
+                        Events you have created.
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm text-center">
-            <div class="card-body">
-                <h5 class="card-title">Registered Events</h5>
-                <h2 class="display-6 fw-bold">0</h2>
-                <p class="text-muted">
-                    Events you have registered for.
-                </p>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Registered Events</h5>
+
+                    <h2 class="display-6 fw-bold">0</h2>
+
+                    <p class="text-muted">
+                        Events you have registered for.
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm text-center">
-            <div class="card-body">
-                <h5 class="card-title">Upcoming Events</h5>
-                <h2 class="display-6 fw-bold">0</h2>
-                <p class="text-muted">
-                    Events coming up soon.
-                </p>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Upcoming Events</h5>
+
+                    <h2 class="display-6 fw-bold">0</h2>
+
+                    <p class="text-muted">
+                        Events coming up soon.
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm text-center">
-            <div class="card-body">
-                <h5 class="card-title">Attendees</h5>
-                <h2 class="display-6 fw-bold">0</h2>
-                <p class="text-muted">
-                    Attendees registered for your events.
-                </p>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Attendees</h5>
+
+                    <h2 class="display-6 fw-bold">0</h2>
+
+                    <p class="text-muted">
+                        Attendees registered for your events.
+                    </p>
+                </div>
             </div>
         </div>
+
     </div>
 
-</div>
+    <div class="text-center mt-5">
 
-<div class="text-center mt-5">
-    <a asp-controller="Events"
-       asp-action="Index"
-       class="btn btn-dark">
-        Browse Events
-    </a>
-</div>
+        <a asp-controller="Events"
+           asp-action="Index"
+           class="btn btn-dark me-2">
+            Browse Events
+        </a>
+
+        <a asp-controller="Events"
+           asp-action="Create"
+           class="btn btn-outline-dark">
+            Create Event
+        </a>
+
+    </div>
+}
+else
+{
+    <div class="row g-4 justify-content-center">
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Registered Events</h5>
+
+                    <h2 class="display-6 fw-bold">0</h2>
+
+                    <p class="text-muted">
+                        Events you have registered for.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Upcoming Events</h5>
+
+                    <h2 class="display-6 fw-bold">0</h2>
+
+                    <p class="text-muted">
+                        Events coming up soon.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="text-center mt-5">
+
+        <a asp-controller="Events"
+           asp-action="Index"
+           class="btn btn-dark">
+            Browse Events
+        </a>
+
+    </div>
+}

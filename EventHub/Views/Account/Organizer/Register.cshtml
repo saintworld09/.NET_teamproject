@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Attendee Registration";
+    ViewData["Title"] = "Organizer Registration";
 }
 
 <div class="row justify-content-center">
@@ -7,19 +7,27 @@
 
         <div class="text-center mb-4">
             <h1 class="display-6 fw-bold">
-                Create Your Account
+                Become an Event Organizer
             </h1>
 
             <p class="text-muted">
-                Join EventHub and start discovering and registering for events.
+                Create an organizer account and start creating and managing events on EventHub.
             </p>
         </div>
 
         <div class="card shadow-sm">
             <div class="card-body p-4">
 
+                <div class="alert alert-light border mb-4">
+                    <strong>Organizer Account</strong>
+                    <p class="mb-0 mt-1">
+                        Organizer accounts can create, manage, and monitor events
+                        and their registered attendees.
+                    </p>
+                </div>
+
                 <form asp-controller="Account"
-                      asp-action="Register"
+                      asp-action="OrganizerRegister"
                       method="post">
 
                     @Html.AntiForgeryToken()
@@ -120,7 +128,7 @@
                     <div class="d-grid">
                         <button type="submit"
                                 class="btn btn-dark">
-                            Create Account
+                            Create Organizer Account
                         </button>
                     </div>
 
@@ -139,10 +147,11 @@
 
                 <div class="text-center mt-3">
                     <p class="mb-0">
-                        Want to create and manage events?
+                        Looking to attend events instead?
 
-                        <a href="/Account/Organizer/Register">
-                            Register as an organizer
+                        <a asp-controller="Account"
+                           asp-action="Register">
+                            Create an attendee account
                         </a>
                     </p>
                 </div>
