@@ -1,0 +1,224 @@
+
+@model EventHub.Models.Event
+
+@{
+    ViewData["Title"] = "Event Details";
+
+    int registeredCount = (int)ViewBag.RegisteredCount;
+    bool isRegistered = (bool)ViewBag.IsRegistered;
+    int availableSeats = Math.Max(0, Model.Capacity - registeredCount);
+
+    bool isPastEvent = Model.EventDate <= DateTime.Now;
+    bool isCancelled = Model.Status == "Cancelled";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+
+        <a asp-controller="Events"
+           asp-action="Index"
+           class="text-decoration-none">
+            &larr; Back to Events
+        </a>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success mt-3" role="alert">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger mt-3" role="alert">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (isCancelled)
+        {
+            <div class="alert alert-danger mt-3" role="alert">
+                <strong>Event Cancelled:</strong>
+                This event has been cancelled by the organizer.
+                Registration is no longer available.
+            </div>
+        }
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-body p-4 p-md-5">
+
+                <span class="badge bg-dark mb-3">
+                    @(Model.Category?.Name ?? "Uncategorized")
+                </span>
+
+                <h1 class="display-6 fw-bold">
+                    @Model.Title
+                </h1>
+
+                <p class="text-muted mb-3">
+                    Organized by
+                    @if (Model.Organizer != null)
+                    {
+                        @($"{Model.Organizer.FirstName} {Model.Organizer.LastName}")
+                    }
+                    else
+                    {
+                        <span>Unknown organizer</span>
+                    }
+                </p>
+
+                <p>
+                    @if (isCancelled)
+                    {
+                        <span class="badge bg-danger">Cancelled</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Scheduled</span>
+                    }
+                </p>
+
+                <hr />
+
+                <h4 class="fw-bold mt-4">About This Event</h4>
+
+                <p class="mt-3" style="white-space: pre-line;">@Model.Description</p>
+
+                <h4 class="fw-bold mt-4">Event Information</h4>
+
+                <div class="row g-3 mt-1">
+
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <strong>Date and Time</strong>
+                            <p class="mb-0 mt-2">
+                                @Model.EventDate.ToString("dd MMMM yyyy")
+                                <br />
+                                @Model.EventDate.ToString("h:mm tt")
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <strong>Location</strong>
+                            <p class="mb-0 mt-2">@Model.Location</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <strong>Maximum Capacity</strong>
+                            <p class="mb-0 mt-2">
+                                @Model.Capacity attendees
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <strong>Available Seats</strong>
+                            <p class="mb-0 mt-2">
+                                @if (isCancelled)
+                                {
+                                    <span>Not available</span>
+                                }
+                                else
+                                {
+                                    <span>@availableSeats seats remaining</span>
+                                }
+                            </p>
+
+                            <small class="text-muted">
+                                @registeredCount registered
+                            </small>
+                        </div>
+                    </div>
+
+                </div>
+
+                <hr class="my-4" />
+
+                <h4 class="fw-bold">Event Registration</h4>
+
+                @if (isCancelled)
+                {
+                    <div class="alert alert-danger mt-3">
+                        This event has been cancelled.
+                        You cannot register for it.
+                    </div>
+                }
+                else if (isPastEvent)
+                {
+                    <p class="text-muted mt-3">
+                        This event has already started or passed.
+                        Registration is closed.
+                    </p>
+                }
+                else if (User.IsInRole("Attendee"))
+                {
+                    if (isRegistered)
+                    {
+                        <div class="alert alert-success mt-3">
+                            You are registered for this event.
+                        </div>
+                    }
+                    else if (availableSeats == 0)
+                    {
+                        <div class="alert alert-warning mt-3">
+                            This event is full. No seats are currently available.
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mt-2">
+                            There are @availableSeats seats available.
+                            Register to reserve your place.
+                        </p>
+
+                        <form asp-controller="Events"
+                              asp-action="Register"
+                              asp-route-id="@Model.EventId"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="btn btn-dark">
+                                Register for This Event
+                            </button>
+                        </form>
+                    }
+                }
+                else if (User.Identity?.IsAuthenticated == true)
+                {
+                    <p class="text-muted mt-3">
+                        Event registration is available to attendee accounts.
+                    </p>
+                }
+                else
+                {
+                    <p class="text-muted mt-3">
+                        Please log in as an attendee to register for this event.
+                    </p>
+
+                    <a asp-controller="Account"
+                       asp-action="Login"
+                       class="btn btn-dark">
+                        Log In to Register
+                    </a>
+                }
+
+                <div class="mt-4">
+                    <a asp-controller="Events"
+                       asp-action="Index"
+                       class="btn btn-outline-secondary">
+                        Back to All Events
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>

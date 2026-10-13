@@ -68,6 +68,10 @@ namespace EventHub.Migrations
                     b.Property<int>("OrganizerId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(150)

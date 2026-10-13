@@ -1,0 +1,495 @@
+
+@model IEnumerable<EventHub.Models.Event>
+
+@{
+    ViewData["Title"] = "My Events";
+
+    string userRole = ViewBag.UserRole as string ?? "";
+    int currentUserId = ViewBag.CurrentUserId is int id ? id : 0;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h1 class="display-6 fw-bold">My Events</h1>
+
+        @if (userRole == "Organizer")
+        {
+            <p class="text-muted mb-0">
+                Manage the events you have created.
+            </p>
+        }
+        else
+        {
+            <p class="text-muted mb-0">
+                View the events you have registered for and manage your registrations.
+            </p>
+        }
+    </div>
+
+    @if (userRole == "Organizer")
+    {
+        <a asp-controller="Events"
+           asp-action="Create"
+           class="btn btn-dark">
+            Create New Event
+        </a>
+    }
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close">
+        </button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close">
+        </button>
+    </div>
+}
+
+@if (Model == null || !Model.Any())
+{
+    <div class="text-center py-5">
+        @if (userRole == "Organizer")
+        {
+            <h3 class="fw-bold">You haven't created any events yet.</h3>
+
+            <p class="text-muted mt-2">
+                Create your first event to start welcoming attendees.
+            </p>
+
+            <a asp-controller="Events"
+               asp-action="Create"
+               class="btn btn-dark mt-2">
+                Create Your First Event
+            </a>
+        }
+        else
+        {
+            <h3 class="fw-bold">You haven't registered for any events yet.</h3>
+
+            <p class="text-muted mt-2">
+                Explore upcoming events and register to reserve your place.
+            </p>
+
+            <a asp-controller="Events"
+               asp-action="Index"
+               class="btn btn-dark mt-2">
+                Explore Events
+            </a>
+        }
+    </div>
+}
+else if (userRole == "Organizer")
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Capacity</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var eventItem in Model)
+                {
+                    int registeredCount = eventItem.Registrations?
+                        .Count(r => r.Status == "Registered") ?? 0;
+
+                    bool isCancelled = eventItem.Status == "Cancelled";
+                    bool isPastEvent = eventItem.EventDate < DateTime.Now;
+
+                    <tr>
+                        <td>
+                            <div class="fw-bold">
+                                @eventItem.Title
+                            </div>
+
+                            <small class="text-muted">
+                                @(eventItem.Category?.Name ?? "Uncategorized")
+                            </small>
+                        </td>
+
+                        <td>
+                            @eventItem.EventDate.ToString("dd MMM yyyy, h:mm tt")
+                        </td>
+
+                        <td>
+                            @if (isCancelled)
+                            {
+                                <span class="badge bg-danger">Cancelled</span>
+                            }
+                            else if (isPastEvent)
+                            {
+                                <span class="badge bg-secondary">Past Event</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">@eventItem.Status</span>
+                            }
+                        </td>
+
+                        <td>@eventItem.Capacity</td>
+
+                        <td>@registeredCount</td>
+
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+
+                                <a asp-controller="Events"
+                                   asp-action="Details"
+                                   asp-route-id="@eventItem.EventId"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    View
+                                </a>
+
+                                <a asp-controller="Events"
+                                   asp-action="Attendees"
+                                   asp-route-id="@eventItem.EventId"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-people me-1"></i>
+                                    View Attendees
+                                </a>
+
+                                @if (!isCancelled && !isPastEvent)
+                                {
+                                    <a asp-controller="Events"
+                                       asp-action="Edit"
+                                       asp-route-id="@eventItem.EventId"
+                                       class="btn btn-sm btn-dark">
+                                        Edit
+                                    </a>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-warning"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#cancelEventModal"
+                                            data-event-id="@eventItem.EventId"
+                                            data-event-title="@eventItem.Title">
+                                        Cancel Event
+                                    </button>
+                                }
+
+                                <a asp-controller="Events"
+                                   asp-action="Delete"
+                                   asp-route-id="@eventItem.EventId"
+                                   class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </a>
+
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else if (userRole == "Attendee")
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Date</th>
+                    <th>Event Status</th>
+                    <th>My Registration</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var eventItem in Model)
+                {
+                    var myRegistration = eventItem.Registrations?
+                        .Where(r => r.UserId == currentUserId &&
+                                    r.Status == "Registered")
+                        .OrderByDescending(r => r.RegisteredAt)
+                        .FirstOrDefault()
+                        ?? eventItem.Registrations?
+                            .Where(r => r.UserId == currentUserId)
+                            .OrderByDescending(r => r.RegisteredAt)
+                            .FirstOrDefault();
+
+                    bool isEventCancelled = eventItem.Status == "Cancelled";
+                    bool isPastEvent = eventItem.EventDate < DateTime.Now;
+
+                    bool hasActiveRegistration =
+                        myRegistration != null &&
+                        myRegistration.Status == "Registered";
+
+                    <tr>
+                        <td>
+                            <div class="fw-bold">
+                                @eventItem.Title
+                            </div>
+
+                            <small class="text-muted">
+                                @(eventItem.Category?.Name ?? "Uncategorized")
+                            </small>
+                        </td>
+
+                        <td>
+                            @eventItem.EventDate.ToString("dd MMM yyyy, h:mm tt")
+                        </td>
+
+                        <td>
+                            @if (isEventCancelled)
+                            {
+                                <span class="badge bg-danger">Cancelled</span>
+                            }
+                            else if (isPastEvent)
+                            {
+                                <span class="badge bg-secondary">Past Event</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">@eventItem.Status</span>
+                            }
+                        </td>
+
+                        <td>
+                            @if (hasActiveRegistration)
+                            {
+                                <span class="badge bg-success">Registered</span>
+                            }
+                            else if (myRegistration?.Status == "Cancelled")
+                            {
+                                <span class="badge bg-secondary">Cancelled</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    @(myRegistration?.Status ?? "Unknown")
+                                </span>
+                            }
+                        </td>
+
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+
+                                <a asp-controller="Events"
+                                   asp-action="Details"
+                                   asp-route-id="@eventItem.EventId"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    View Event
+                                </a>
+
+                                @if (hasActiveRegistration && myRegistration != null)
+                                {
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#cancelRegistrationModal-@myRegistration.RegistrationId"
+                                            data-event-title="@eventItem.Title">
+                                        Cancel Registration
+                                    </button>
+                                }
+                                else if (myRegistration?.Status == "Cancelled"
+                                         && !isEventCancelled
+                                         && !isPastEvent)
+                                {
+                                    <span class="small text-muted align-self-center">
+                                        Your registration is cancelled.
+                                    </span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+
+                    @if (hasActiveRegistration && myRegistration != null)
+                    {
+                        <div class="modal fade"
+                             id="cancelRegistrationModal-@myRegistration.RegistrationId"
+                             tabindex="-1"
+                             aria-labelledby="cancelRegistrationLabel-@myRegistration.RegistrationId"
+                             aria-hidden="true">
+
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow">
+
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title fw-bold"
+                                            id="cancelRegistrationLabel-@myRegistration.RegistrationId">
+                                            Cancel Registration?
+                                        </h5>
+
+                                        <button type="button"
+                                                class="btn-close btn-close-white"
+                                                data-bs-dismiss="modal"
+                                                aria-label="Close">
+                                        </button>
+                                    </div>
+
+                                    <div class="modal-body p-4">
+                                        <div class="text-center mb-3">
+                                            <div class="display-5 text-danger">
+                                                <i class="bi bi-exclamation-triangle"></i>
+                                            </div>
+                                        </div>
+
+                                        <p class="mb-2">
+                                            Are you sure you want to cancel your registration
+                                            for <strong>@eventItem.Title</strong>?
+                                        </p>
+
+                                        <p class="text-muted small mb-0">
+                                            Your registration history will be preserved,
+                                            but your registration will be marked as cancelled.
+                                        </p>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <button type="button"
+                                                class="btn btn-outline-secondary"
+                                                data-bs-dismiss="modal">
+                                            Keep Registration
+                                        </button>
+
+                                        <form asp-controller="Events"
+                                              asp-action="CancelMyRegistration"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@myRegistration.RegistrationId" />
+
+                                            <button type="submit"
+                                                    class="btn btn-danger fw-semibold">
+                                                Yes, Cancel Registration
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (userRole == "Organizer")
+{
+    <!-- Organizer's Cancel Event Confirmation Modal -->
+    <div class="modal fade"
+         id="cancelEventModal"
+         tabindex="-1"
+         aria-labelledby="cancelEventModalLabel"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title fw-bold" id="cancelEventModalLabel">
+                        Cancel Event?
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <div class="text-center mb-3">
+                        <div class="display-5 text-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                    </div>
+
+                    <p class="mb-2">
+                        Are you sure you want to cancel
+                        <strong id="cancelEventTitle">this event</strong>?
+                    </p>
+
+                    <p class="text-muted small mb-0">
+                        Existing registrations will be preserved, but attendees
+                        will no longer be able to register for this event.
+                    </p>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Keep Event
+                    </button>
+
+                    <form id="cancelEventForm"
+                          asp-controller="Events"
+                          asp-action="Cancel"
+                          method="post"
+                          class="d-inline">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               id="cancelEventId"
+                               name="id"
+                               value="" />
+
+                        <button type="submit"
+                                class="btn btn-warning fw-semibold">
+                            Yes, Cancel Event
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const cancelEventModal =
+                document.getElementById("cancelEventModal");
+
+            if (cancelEventModal) {
+                cancelEventModal.addEventListener("show.bs.modal", function (event) {
+                    const button = event.relatedTarget;
+
+                    if (!button) {
+                        return;
+                    }
+
+                    const eventId = button.getAttribute("data-event-id");
+                    const eventTitle = button.getAttribute("data-event-title");
+
+                    document.getElementById("cancelEventId").value = eventId;
+                    document.getElementById("cancelEventTitle").textContent = eventTitle;
+                });
+            }
+        });
+    </script>
+}

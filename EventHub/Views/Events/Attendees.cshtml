@@ -1,0 +1,228 @@
+
+@model EventHub.Models.Event
+
+@{
+    ViewData["Title"] = "Event Attendees";
+
+    var registrations = Model.Registrations
+        .OrderByDescending(r => r.RegisteredAt)
+        .ToList();
+
+    int registeredCount = ViewBag.RegisteredCount ?? 0;
+}
+
+<div class="container py-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h2 mb-2">Event Attendees</h1>
+            <p class="text-muted mb-0">
+                View and manage the people registered for your event.
+            </p>
+        </div>
+
+        <a asp-controller="Events"
+           asp-action="MyEvents"
+           class="btn btn-outline-secondary">
+            Back to My Events
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h4">@Model.Title</h2>
+
+            <p class="mb-2">
+                <strong>Date:</strong>
+                @Model.EventDate.ToString("dd MMM yyyy, hh:mm tt")
+            </p>
+
+            <p class="mb-2">
+                <strong>Location:</strong>
+                @Model.Location
+            </p>
+
+            <p class="mb-3">
+                <strong>Event Status:</strong>
+
+                @if (Model.Status == "Cancelled")
+                {
+                    <span class="badge bg-danger">Cancelled</span>
+                }
+                else if (Model.EventDate < DateTime.Now)
+                {
+                    <span class="badge bg-secondary">Past Event</span>
+                }
+                else
+                {
+                    <span class="badge bg-success">@Model.Status</span>
+                }
+            </p>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <p class="text-muted mb-1">Active Registrations</p>
+                        <h3 class="mb-0">@registeredCount</h3>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <p class="text-muted mb-1">Event Capacity</p>
+                        <h3 class="mb-0">@Model.Capacity</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h2 class="h5 mb-0">Registration Records</h2>
+        </div>
+
+        <div class="card-body">
+            @if (!registrations.Any())
+            {
+                <div class="alert alert-info mb-0">
+                    No one has registered for this event yet.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Attendee Name</th>
+                                <th scope="col">Email Address</th>
+                                <th scope="col">Registration Date</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @for (int i = 0; i < registrations.Count; i++)
+                            {
+                                var registration = registrations[i];
+
+                                <tr>
+                                    <td>@(i + 1)</td>
+
+                                    <td>
+                                        @if (registration.User != null)
+                                        {
+                                            @($"{registration.User.FirstName} {registration.User.LastName}")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">User unavailable</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (registration.User != null)
+                                        {
+                                            @registration.User.Email
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not available</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @registration.RegisteredAt.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")
+                                    </td>
+
+                                    <td>
+                                        @if (registration.Status == "Registered")
+                                        {
+                                            <span class="badge bg-success">Registered</span>
+                                        }
+                                        else if (registration.Status == "Cancelled")
+                                        {
+                                            <span class="badge bg-secondary">Cancelled</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                @registration.Status
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (registration.Status == "Registered")
+                                        {
+                                            <form asp-controller="Events"
+                                                  asp-action="CancelRegistration"
+                                                  method="post"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Are you sure you want to cancel this attendee registration? The registration record will be preserved.');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="id"
+                                                       value="@registration.RegistrationId" />
+
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger">
+                                                    Cancel Registration
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No action available</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="small text-muted mb-0">
+                    Cancelled registrations remain in the records for reference.
+                    Only active registrations count toward event capacity.
+                </p>
+            }
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-controller="Events"
+           asp-action="MyEvents"
+           class="btn btn-secondary">
+            Back to My Events
+        </a>
+    </div>
+
+</div>

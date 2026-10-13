@@ -34,4 +34,6 @@ public class Event
     public User? Organizer { get; set; }
 
     public ICollection<Registration> Registrations { get; set; } = new List<Registration>();
+
+    public string Status { get; set; } = "Scheduled";
 }

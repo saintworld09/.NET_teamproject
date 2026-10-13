@@ -1,47 +1,41 @@
+
+@using EventHub.Models
+
 @{
     ViewData["Title"] = "Dashboard";
+
+    var recentEvents = ViewBag.RecentEvents as List<Event>
+        ?? new List<Event>();
 }
 
 <div class="text-center mb-5">
     <h1 class="display-5 fw-bold">
-        @if (User.IsInRole("Organizer"))
-        {
-            <span>Organizer Dashboard</span>
-        }
-        else
-        {
-            <span>Attendee Dashboard</span>
-        }
+        @(User.IsInRole("Organizer")
+            ? "Organizer Dashboard"
+            : "Attendee Dashboard")
     </h1>
 
-    <p class="lead">
-        @if (User.IsInRole("Organizer"))
-        {
-            <span>
-                Manage your events and keep track of your registered attendees.
-            </span>
-        }
-        else
-        {
-            <span>
-                Keep track of your event registrations and upcoming events.
-            </span>
-        }
+    <p class="lead text-muted">
+        @(User.IsInRole("Organizer")
+            ? "Manage your events and track registrations."
+            : "Keep track of your registrations and upcoming events.")
     </p>
 </div>
 
 @if (User.IsInRole("Organizer"))
 {
-    <div class="row g-4">
-
+    <div class="row g-4 mb-5">
         <div class="col-md-6 col-lg-3">
-            <div class="card h-100 shadow-sm text-center">
+            <div class="card h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="card-title">My Events</h5>
-
-                    <h2 class="display-6 fw-bold">0</h2>
-
-                    <p class="text-muted">
+                    <div class="text-muted mb-2">
+                        <i class="bi bi-calendar-event me-2"></i>
+                        Total Events
+                    </div>
+                    <h2 class="display-6 fw-bold">
+                        @ViewBag.TotalEvents
+                    </h2>
+                    <p class="text-muted small mb-0">
                         Events you have created.
                     </p>
                 </div>
@@ -49,106 +43,274 @@
         </div>
 
         <div class="col-md-6 col-lg-3">
-            <div class="card h-100 shadow-sm text-center">
+            <div class="card h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="card-title">Registered Events</h5>
-
-                    <h2 class="display-6 fw-bold">0</h2>
-
-                    <p class="text-muted">
-                        Events you have registered for.
+                    <div class="text-muted mb-2">
+                        <i class="bi bi-calendar-check me-2"></i>
+                        Scheduled Events
+                    </div>
+                    <h2 class="display-6 fw-bold text-success">
+                        @ViewBag.ScheduledEvents
+                    </h2>
+                    <p class="text-muted small mb-0">
+                        Events currently scheduled.
                     </p>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6 col-lg-3">
-            <div class="card h-100 shadow-sm text-center">
+            <div class="card h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="card-title">Upcoming Events</h5>
-
-                    <h2 class="display-6 fw-bold">0</h2>
-
-                    <p class="text-muted">
-                        Events coming up soon.
+                    <div class="text-muted mb-2">
+                        <i class="bi bi-calendar-x me-2"></i>
+                        Cancelled Events
+                    </div>
+                    <h2 class="display-6 fw-bold text-danger">
+                        @ViewBag.CancelledEvents
+                    </h2>
+                    <p class="text-muted small mb-0">
+                        Events you have cancelled.
                     </p>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6 col-lg-3">
-            <div class="card h-100 shadow-sm text-center">
+            <div class="card h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="card-title">Attendees</h5>
-
-                    <h2 class="display-6 fw-bold">0</h2>
-
-                    <p class="text-muted">
-                        Attendees registered for your events.
+                    <div class="text-muted mb-2">
+                        <i class="bi bi-people me-2"></i>
+                        Active Registrations
+                    </div>
+                    <h2 class="display-6 fw-bold text-primary">
+                        @ViewBag.TotalRegistrations
+                    </h2>
+                    <p class="text-muted small mb-0">
+                        Current registrations across your events.
                     </p>
                 </div>
             </div>
         </div>
-
     </div>
 
-    <div class="text-center mt-5">
-
-        <a asp-controller="Events"
-           asp-action="Index"
-           class="btn btn-dark me-2">
-            Browse Events
-        </a>
-
+    <div class="d-flex flex-wrap gap-2 justify-content-center mb-5">
         <a asp-controller="Events"
            asp-action="Create"
-           class="btn btn-outline-dark">
+           class="btn btn-dark">
+            <i class="bi bi-plus-circle me-1"></i>
             Create Event
         </a>
 
-    </div>
-}
-else
-{
-    <div class="row g-4 justify-content-center">
-
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Registered Events</h5>
-
-                    <h2 class="display-6 fw-bold">0</h2>
-
-                    <p class="text-muted">
-                        Events you have registered for.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Upcoming Events</h5>
-
-                    <h2 class="display-6 fw-bold">0</h2>
-
-                    <p class="text-muted">
-                        Events coming up soon.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="text-center mt-5">
+        <a asp-controller="Events"
+           asp-action="MyEvents"
+           class="btn btn-outline-dark">
+            My Events
+        </a>
 
         <a asp-controller="Events"
            asp-action="Index"
-           class="btn btn-dark">
+           class="btn btn-outline-secondary">
+            Browse Events
+        </a>
+    </div>
+}
+else if (User.IsInRole("Attendee"))
+{
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="text-muted mb-2">
+                        <i class="bi bi-ticket-perforated me-2"></i>
+                        Registered Events
+                    </div>
+                    <h2 class="display-6 fw-bold">
+                        @ViewBag.RegisteredEvents
+                    </h2>
+                    <p class="text-muted small mb-0">
+                        Active registrations you currently have.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="text-muted mb-2">
+                        <i class="bi bi-calendar-check me-2"></i>
+                        Upcoming Events
+                    </div>
+                    <h2 class="display-6 fw-bold text-success">
+                        @ViewBag.UpcomingEvents
+                    </h2>
+                    <p class="text-muted small mb-0">
+                        Registered events that are scheduled for the future.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="text-muted mb-2">
+                        <i class="bi bi-calendar2-check me-2"></i>
+                        Past Events
+                    </div>
+                    <h2 class="display-6 fw-bold text-secondary">
+                        @ViewBag.PastEvents
+                    </h2>
+                    <p class="text-muted small mb-0">
+                        Registered events whose date has passed.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="text-muted mb-2">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancelled Registrations
+                    </div>
+                    <h2 class="display-6 fw-bold text-danger">
+                        @ViewBag.CancelledRegistrations
+                    </h2>
+                    <p class="text-muted small mb-0">
+                        Registrations you have cancelled.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mb-5">
+        <a asp-controller="Events"
+           asp-action="Index"
+           class="btn btn-dark me-2">
+            <i class="bi bi-search me-1"></i>
             Browse Events
         </a>
 
+        <a asp-controller="Events"
+           asp-action="MyEvents"
+           class="btn btn-outline-dark">
+            My Events
+        </a>
     </div>
 }
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Recent Events</h4>
+
+            <a asp-controller="Events"
+               asp-action="MyEvents"
+               class="text-decoration-none">
+                View My Events
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        @if (recentEvents.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Event</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th class="text-end pe-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var eventItem in recentEvents)
+                        {
+                            <tr>
+                                <td class="ps-3">
+                                    <strong>@eventItem.Title</strong>
+                                    <div class="small text-muted">
+                                        @eventItem.Location
+                                    </div>
+                                </td>
+
+                                <td>
+                                    @(eventItem.Category?.Name ?? "Uncategorized")
+                                </td>
+
+                                <td>
+                                    @eventItem.EventDate.ToString("dd MMM yyyy, h:mm tt")
+                                </td>
+
+                                <td>
+                                    @if (eventItem.Status == "Scheduled")
+                                    {
+                                        <span class="badge bg-success">
+                                            Scheduled
+                                        </span>
+                                    }
+                                    else if (eventItem.Status == "Cancelled")
+                                    {
+                                        <span class="badge bg-danger">
+                                            Cancelled
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            @eventItem.Status
+                                        </span>
+                                    }
+                                </td>
+
+                                <td class="text-end pe-3">
+                                    <a asp-controller="Events"
+                                       asp-action="Details"
+                                       asp-route-id="@eventItem.EventId"
+                                       class="btn btn-sm btn-outline-dark">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5 px-3">
+                <h5 class="text-muted">No events to display yet</h5>
+                <p class="text-muted mb-3">
+                    @(User.IsInRole("Organizer")
+                        ? "Create your first event to see its details here."
+                        : "Register for an event to see it listed here.")
+                </p>
+
+                @if (User.IsInRole("Organizer"))
+                {
+                    <a asp-controller="Events"
+                       asp-action="Create"
+                       class="btn btn-dark">
+                        Create Your First Event
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Events"
+                       asp-action="Index"
+                       class="btn btn-dark">
+                        Browse Events
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>
