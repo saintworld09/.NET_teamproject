@@ -19,20 +19,137 @@ public class EventsController : Controller
         _context = context;
     }
 
-    // Anyone can browse events.
-    [AllowAnonymous]
-    [HttpGet]
-    public async Task<IActionResult> Index()
-    {
-        var events = await _context.Events
-            .Include(e => e.Category)
-            .Include(e => e.Organizer)
-            .Include(e => e.Registrations)
-            .OrderBy(e => e.EventDate)
-            .ToListAsync();
+// Anyone can browse, search, filter, and sort events.
+[AllowAnonymous]
+[HttpGet]
+public async Task<IActionResult> Index(
+    string? searchTerm,
+    string? status,
+    string? sortBy)
+{
+    DateTime now = DateTime.Now;
 
-        return View(events);
+    searchTerm = searchTerm?.Trim();
+
+    status = string.IsNullOrWhiteSpace(status)
+        ? "all"
+        : status.Trim().ToLowerInvariant();
+
+    sortBy = string.IsNullOrWhiteSpace(sortBy)
+        ? "date-asc"
+        : sortBy.Trim().ToLowerInvariant();
+
+    // Start with all events and include the data needed by the cards.
+    var query = _context.Events
+        .AsNoTracking()
+        .Include(e => e.Category)
+        .Include(e => e.Organizer)
+        .Include(e => e.Registrations)
+        .AsQueryable();
+
+    // Search event title, description, location, category, and organizer.
+    if (!string.IsNullOrWhiteSpace(searchTerm))
+    {
+        query = query.Where(e =>
+            e.Title.Contains(searchTerm) ||
+            e.Description.Contains(searchTerm) ||
+            e.Location.Contains(searchTerm) ||
+            (e.Category != null &&
+                e.Category.Name.Contains(searchTerm)) ||
+            (e.Organizer != null &&
+                (e.Organizer.FirstName + " " +
+                 e.Organizer.LastName).Contains(searchTerm)) ||
+            (e.Organizer != null &&
+                e.Organizer.FirstName.Contains(searchTerm)) ||
+            (e.Organizer != null &&
+                e.Organizer.LastName.Contains(searchTerm)));
     }
+
+    // Filter using the same status categories displayed on the cards.
+    switch (status)
+    {
+        case "upcoming":
+            query = query.Where(e =>
+                e.Status != "Cancelled" &&
+                e.EventDate > now &&
+                e.Registrations.Count(r =>
+                    r.Status == "Registered") < e.Capacity);
+            break;
+
+        case "full":
+            query = query.Where(e =>
+                e.Status != "Cancelled" &&
+                e.EventDate > now &&
+                e.Registrations.Count(r =>
+                    r.Status == "Registered") >= e.Capacity);
+            break;
+
+        case "past":
+            query = query.Where(e =>
+                e.Status != "Cancelled" &&
+                e.EventDate <= now);
+            break;
+
+        case "cancelled":
+            query = query.Where(e =>
+                e.Status == "Cancelled");
+            break;
+
+        default:
+            status = "all";
+            break;
+    }
+
+    // Sort the matching results.
+    switch (sortBy)
+    {
+        case "date-desc":
+            query = query
+                .OrderByDescending(e => e.EventDate)
+                .ThenBy(e => e.Title);
+            break;
+
+        case "title":
+            query = query
+                .OrderBy(e => e.Title)
+                .ThenBy(e => e.EventDate);
+            break;
+
+        case "status":
+            query = query
+                .OrderBy(e =>
+                    e.Status == "Cancelled" ? 3 :
+                    e.EventDate <= now ? 2 :
+                    e.Registrations.Count(r =>
+                        r.Status == "Registered") >= e.Capacity ? 1 : 0)
+                .ThenBy(e => e.EventDate)
+                .ThenBy(e => e.Title);
+            break;
+
+        default:
+            sortBy = "date-asc";
+            query = query
+                .OrderBy(e => e.EventDate)
+                .ThenBy(e => e.Title);
+            break;
+    }
+
+    var events = await query.ToListAsync();
+
+    // Values used to keep the search controls selected after submission.
+    ViewBag.SearchTerm = searchTerm ?? string.Empty;
+    ViewBag.SelectedStatus = status;
+    ViewBag.SelectedSort = sortBy;
+    ViewBag.ResultCount = events.Count;
+    ViewBag.TotalEvents = await _context.Events.CountAsync();
+
+    return View(events);
+}
+
+
+
+
+
 
     // Only organizers can open the Create Event form.
     [Authorize(Roles = "Organizer")]
@@ -115,6 +232,10 @@ public class EventsController : Controller
 
         return RedirectToAction(nameof(Index));
     }
+
+
+
+
 
     // Display the full details of an event.
     [AllowAnonymous]

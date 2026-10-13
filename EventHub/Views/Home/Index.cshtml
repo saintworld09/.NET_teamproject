@@ -1,124 +1,354 @@
-﻿<div class="row justify-content-center mt-5">
-    <div class="col-lg-10">
+﻿
+@{
+    ViewData["Title"] = "Discover Events";
+}
 
-        <div class="text-center mb-5">
-            <h2 class="fw-bold">
-                Everything You Need to Discover and Manage Events
-            </h2>
+<section class="home-hero">
+    <div class="row align-items-center g-5">
+        <div class="col-lg-7">
+            <div class="hero-content">
+                <div class="hero-eyebrow">
+                    <span class="hero-eyebrow-dot"></span>
+                    YOUR NEXT EXPERIENCE STARTS HERE
+                </div>
 
-            <p class="lead text-muted mt-3">
-                EventHub is an event management platform designed to make it
-                easier for people to discover, register for, and keep track of
-                events, while giving organizers the tools they need to create
-                and manage successful events.
-            </p>
+                <h1 class="hero-title">
+                    Bring people together.
+                    <span>Make moments matter.</span>
+                </h1>
 
-            <p class="text-muted">
-                Whether you are looking for an event to attend or planning an
-                event for a group, organization, school, or community,
-                EventHub provides a simple place to manage the entire experience.
-            </p>
-        </div>
-
-    </div>
-</div>
-
-<div class="row g-4 mt-4">
-
-    <div class="col-md-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center p-4">
-
-                <h4>Discover Events</h4>
-
-                <p class="text-muted">
-                    Browse upcoming events and find activities that match your
-                    interests. Explore event details such as the date, location,
-                    description, and available capacity before deciding to attend.
+                <p class="hero-description">
+                    Discover events that inspire you, reserve your place,
+                    and keep every experience organized. EventHub brings
+                    event discovery and management together in one simple place.
                 </p>
 
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center p-4">
-
-                <h4>Register Easily</h4>
-
-                <p class="text-muted">
-                    Found an event you like? Register easily and keep track of
-                    the events you plan to attend. Your dashboard gives you a
-                    convenient place to keep up with your event registrations.
-                </p>
-
-            </div>
-        </div>
-    </div>
-
-    @if (User.IsInRole("Organizer"))
-    {
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body text-center p-4">
-
-                    <h4>Manage Events</h4>
-
-                    <p class="text-muted">
-                        Organizers can create events, provide important event
-                        information, manage event details, and keep track of
-                        people registered for their events.
-                    </p>
-
+                <div class="hero-actions">
                     <a asp-controller="Events"
-                       asp-action="Create"
-                       class="btn btn-dark">
-                        Create an Event
+                       asp-action="Index"
+                       class="btn btn-brand btn-lg">
+                        Explore events
+                        <span aria-hidden="true">&rarr;</span>
                     </a>
 
+                    @if (User.Identity?.IsAuthenticated != true)
+                    {
+                        <a asp-controller="Account"
+                           asp-action="Register"
+                           class="btn btn-hero-secondary btn-lg">
+                            Create an account
+                        </a>
+                    }
+                    else if (User.IsInRole("Organizer"))
+                    {
+                        <a asp-controller="Events"
+                           asp-action="Create"
+                           class="btn btn-hero-secondary btn-lg">
+                            Create an event
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Dashboard"
+                           asp-action="Index"
+                           class="btn btn-hero-secondary btn-lg">
+                            Go to dashboard
+                        </a>
+                    }
+                </div>
+
+                <div class="hero-benefits">
+                    <div class="hero-benefit">
+                        <span class="benefit-check" aria-hidden="true">✓</span>
+                        <span>Discover events</span>
+                    </div>
+
+                    <div class="hero-benefit">
+                        <span class="benefit-check" aria-hidden="true">✓</span>
+                        <span>Register with ease</span>
+                    </div>
+
+                    <div class="hero-benefit">
+                        <span class="benefit-check" aria-hidden="true">✓</span>
+                        <span>Stay organized</span>
+                    </div>
                 </div>
             </div>
         </div>
-    }
 
-</div>
+        <div class="col-lg-5">
+            <div class="hero-visual" aria-label="Illustration of event planning and discovery">
+                <div class="hero-visual-glow"></div>
+                <div class="hero-orbit hero-orbit-one"></div>
+                <div class="hero-orbit hero-orbit-two"></div>
 
-<div class="row justify-content-center mt-5">
-    <div class="col-lg-10">
+                <div class="hero-floating-label hero-label-top">
+                    <span class="floating-label-icon" aria-hidden="true">✦</span>
+                    <span>
+                        <strong>Discover</strong>
+                        <small>Find your next experience</small>
+                    </span>
+                </div>
 
-        <div class="text-center py-4">
+                <div class="hero-calendar-card">
+                    <div class="calendar-card-top">
+                        <div>
+                            <span class="calendar-overline">YOUR EVENT SPACE</span>
+                            <h2>Make it happen.</h2>
+                        </div>
 
-            <h3 class="fw-bold">
-                One Platform for Your Event Experience
-            </h3>
+                        <div class="calendar-symbol" aria-hidden="true">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
 
-            <p class="text-muted mt-3">
-                From discovering an upcoming event to managing registrations,
-                EventHub brings the important parts of the event experience
-                together in one place.
-            </p>
+                    <div class="calendar-divider"></div>
 
-            <div class="mt-4">
+                    <div class="calendar-feature">
+                        <div class="calendar-feature-icon" aria-hidden="true">
+                            <span class="calendar-icon-line"></span>
+                            <span class="calendar-icon-line"></span>
+                            <span class="calendar-icon-line"></span>
+                        </div>
+
+                        <div class="calendar-feature-text">
+                            <strong>Find your people</strong>
+                            <span>Explore events that interest you</span>
+                        </div>
+
+                        <span class="calendar-arrow" aria-hidden="true">&rarr;</span>
+                    </div>
+
+                    <div class="calendar-feature">
+                        <div class="calendar-feature-icon calendar-icon-teal"
+                             aria-hidden="true">
+                            <span class="calendar-check">✓</span>
+                        </div>
+
+                        <div class="calendar-feature-text">
+                            <strong>Save your place</strong>
+                            <span>Keep track of your registrations</span>
+                        </div>
+
+                        <span class="calendar-arrow" aria-hidden="true">&rarr;</span>
+                    </div>
+
+                    <div class="calendar-feature">
+                        <div class="calendar-feature-icon calendar-icon-gold"
+                             aria-hidden="true">
+                            <span class="calendar-star">✦</span>
+                        </div>
+
+                        <div class="calendar-feature-text">
+                            <strong>Create experiences</strong>
+                            <span>Bring your community together</span>
+                        </div>
+
+                        <span class="calendar-arrow" aria-hidden="true">&rarr;</span>
+                    </div>
+
+                    <div class="calendar-card-footer">
+                        <span class="calendar-footer-dot"></span>
+                        One platform. More possibilities.
+                    </div>
+                </div>
+
+                <div class="hero-floating-label hero-label-bottom">
+                    <span class="floating-people" aria-hidden="true">
+                        <span>+</span>
+                    </span>
+                    <span>
+                        <strong>Connect &amp; participate</strong>
+                        <small>Be part of something meaningful</small>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-features section-spacing">
+    <div class="section-heading text-center">
+        <span class="section-eyebrow">HOW EVENTHUB WORKS</span>
+
+        <h2>Everything you need, in one place.</h2>
+
+        <p>
+            From finding something exciting to organizing an event of your own,
+            EventHub makes the process straightforward.
+        </p>
+    </div>
+
+    <div class="row g-4 mt-3">
+        <div class="col-md-6 col-lg-4">
+            <article class="feature-card h-100">
+                <div class="feature-icon feature-icon-blue" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="10.8" cy="10.8" r="6.8"></circle>
+                        <path d="m16 16 4.5 4.5"></path>
+                        <path d="M10.8 7.5v6.6M7.5 10.8h6.6"></path>
+                    </svg>
+                </div>
+
+                <span class="feature-number">01 / DISCOVER</span>
+
+                <h3>Find your next event</h3>
+
+                <p>
+                    Explore events, search for what interests you, and review
+                    dates, locations, descriptions, and available capacity
+                    before registering.
+                </p>
 
                 <a asp-controller="Events"
                    asp-action="Index"
-                   class="btn btn-dark btn-lg me-2">
-                    Explore Events
+                   class="feature-link">
+                    Explore events
+                    <span aria-hidden="true">&rarr;</span>
                 </a>
+            </article>
+        </div>
 
-                @if (!User.Identity?.IsAuthenticated == true)
+        <div class="col-md-6 col-lg-4">
+            <article class="feature-card h-100">
+                <div class="feature-icon feature-icon-teal" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <rect x="3.5" y="5" width="17" height="16"
+                              rx="2.5"></rect>
+                        <path d="M7.5 3v4M16.5 3v4M3.5 9.5h17"></path>
+                        <path d="m8.5 14 2.2 2.2 4.8-4.8"></path>
+                    </svg>
+                </div>
+
+                <span class="feature-number">02 / REGISTER</span>
+
+                <h3>Keep everything organized</h3>
+
+                <p>
+                    Register for available events, review your upcoming plans,
+                    and manage your registrations from your personal dashboard.
+                </p>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Events"
+                       asp-action="MyEvents"
+                       class="feature-link">
+                        View my events
+                        <span aria-hidden="true">&rarr;</span>
+                    </a>
+                }
+                else
                 {
                     <a asp-controller="Account"
                        asp-action="Register"
-                       class="btn btn-outline-dark btn-lg">
-                        Get Started
+                       class="feature-link">
+                        Get started
+                        <span aria-hidden="true">&rarr;</span>
                     </a>
                 }
-
-            </div>
-
+            </article>
         </div>
 
+        <div class="col-md-6 col-lg-4">
+            <article class="feature-card h-100">
+                <div class="feature-icon feature-icon-gold" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="7" width="18" height="14"
+                              rx="2.5"></rect>
+                        <path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"></path>
+                    </svg>
+                </div>
+
+                <span class="feature-number">03 / ORGANIZE</span>
+
+                <h3>Bring your ideas to life</h3>
+
+                <p>
+                    Create events, share important details, manage event
+                    information, and keep track of the people who register.
+                </p>
+
+                @if (User.IsInRole("Organizer"))
+                {
+                    <a asp-controller="Events"
+                       asp-action="Create"
+                       class="feature-link">
+                        Create an event
+                        <span aria-hidden="true">&rarr;</span>
+                    </a>
+                }
+                else if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Dashboard"
+                       asp-action="Index"
+                       class="feature-link">
+                        Visit dashboard
+                        <span aria-hidden="true">&rarr;</span>
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Account"
+                       asp-action="Register"
+                       class="feature-link">
+                        Join EventHub
+                        <span aria-hidden="true">&rarr;</span>
+                    </a>
+                }
+            </article>
+        </div>
     </div>
-</div>
+</section>
+
+<section class="home-cta">
+    <div class="home-cta-pattern" aria-hidden="true"></div>
+
+    <div class="home-cta-content">
+        <span class="cta-eyebrow">YOUR NEXT CHAPTER STARTS HERE</span>
+
+        <h2>Great experiences begin with a single step.</h2>
+
+        <p>
+            Discover an event, connect with your community, or start planning
+            something worth remembering.
+        </p>
+
+        <div class="cta-actions">
+            <a asp-controller="Events"
+               asp-action="Index"
+               class="btn btn-cta-primary btn-lg">
+                Explore events
+                <span aria-hidden="true">&rarr;</span>
+            </a>
+
+            @if (User.Identity?.IsAuthenticated != true)
+            {
+                <a asp-controller="Account"
+                   asp-action="Register"
+                   class="btn btn-cta-secondary btn-lg">
+                    Create your account
+                </a>
+            }
+            else if (User.IsInRole("Organizer"))
+            {
+                <a asp-controller="Events"
+                   asp-action="Create"
+                   class="btn btn-cta-secondary btn-lg">
+                    Create an event
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Dashboard"
+                   asp-action="Index"
+                   class="btn btn-cta-secondary btn-lg">
+                    Open dashboard
+                </a>
+            }
+        </div>
+    </div>
+</section>

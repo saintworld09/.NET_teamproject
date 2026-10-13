@@ -4,7 +4,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#102a43" />
+    <meta name="description" content="EventHub makes it easy to discover events, manage registrations, and organize memorable experiences." />
+
     <title>@ViewData["Title"] - EventHub</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet" />
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -12,18 +20,23 @@
 </head>
 
 <body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <header class="site-header">
+        <nav class="navbar navbar-expand-lg eventhub-navbar">
             <div class="container">
-
-                <a class="navbar-brand fw-bold"
+                <a class="navbar-brand eventhub-brand"
                    asp-area=""
                    asp-controller="Home"
-                   asp-action="Index">
-                    EventHub
+                   asp-action="Index"
+                   aria-label="EventHub home">
+
+                    <span class="brand-mark" aria-hidden="true">E</span>
+
+                    <span class="brand-name">
+                        Event<span>Hub</span>
+                    </span>
                 </a>
 
-                <button class="navbar-toggler"
+                <button class="navbar-toggler eventhub-toggler"
                         type="button"
                         data-bs-toggle="collapse"
                         data-bs-target="#eventHubNavigation"
@@ -36,8 +49,7 @@
                 <div class="collapse navbar-collapse"
                      id="eventHubNavigation">
 
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
+                    <ul class="navbar-nav mx-lg-auto mb-3 mb-lg-0 eventhub-nav">
                         <li class="nav-item">
                             <a class="nav-link"
                                asp-area=""
@@ -52,7 +64,7 @@
                                asp-area=""
                                asp-controller="Events"
                                asp-action="Index">
-                                Events
+                                Explore Events
                             </a>
                         </li>
 
@@ -80,15 +92,14 @@
                                 </li>
                             }
                         }
-
                     </ul>
 
-                    <div class="d-flex gap-2 align-items-center">
-
+                    <div class="eventhub-account">
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <span class="text-light me-2">
-                                Welcome, @User.Identity.Name
+                            <span class="welcome-message">
+                                <span class="welcome-dot" aria-hidden="true"></span>
+                                Hi, @(User.Identity.Name ?? "there")
                             </span>
 
                             <form asp-controller="Account"
@@ -99,43 +110,61 @@
                                 @Html.AntiForgeryToken()
 
                                 <button type="submit"
-                                        class="btn btn-outline-light">
-                                    Logout
+                                        class="btn btn-nav-outline">
+                                    Sign out
                                 </button>
-
                             </form>
                         }
                         else
                         {
-                            <a class="btn btn-outline-light"
+                            <a class="btn btn-nav-login"
                                asp-controller="Account"
                                asp-action="Login">
-                                Login
+                                Log in
                             </a>
 
-                            <a class="btn btn-light"
+                            <a class="btn btn-brand"
                                asp-controller="Account"
                                asp-action="Register">
-                                Register
+                                Get started
+                                <span aria-hidden="true">&rarr;</span>
                             </a>
                         }
-
                     </div>
-
                 </div>
             </div>
         </nav>
     </header>
 
-    <main role="main">
-        <div class="container py-4">
+    <main id="main-content" class="site-main" role="main">
+        <div class="container page-container">
             @RenderBody()
         </div>
     </main>
 
-    <footer class="border-top footer text-muted">
-        <div class="container py-3">
-            &copy; @DateTime.Now.Year - EventHub
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <a class="footer-brand"
+                   asp-controller="Home"
+                   asp-action="Index">
+                    Event<span>Hub</span>
+                </a>
+
+                <p class="footer-description">
+                    Discover events. Bring people together.
+                </p>
+
+                <div class="footer-bottom">
+                    <span>
+                        &copy; @DateTime.Now.Year EventHub. All rights reserved.
+                    </span>
+
+                    <span class="footer-tagline">
+                        Made for meaningful experiences.
+                    </span>
+                </div>
+            </div>
         </div>
     </footer>
 
