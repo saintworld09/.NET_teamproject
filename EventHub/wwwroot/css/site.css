@@ -2985,3 +2985,152 @@ textarea:focus-visible {
         gap: 8px;
     }
 }
+
+/* =========================================
+   EventHub - My Events page
+   ========================================= */
+
+/* Main table card */
+.my-events-card {
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+/* Table appearance */
+.my-events-table {
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+.my-events-table thead th {
+    background-color: #f8f9fa;
+    color: #343a40;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+    padding: 1rem 1.1rem;
+    white-space: nowrap;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.my-events-table tbody td {
+    padding: 1rem 1.1rem;
+    border-color: #f0f1f3;
+}
+
+.my-events-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.my-events-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.my-events-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Compact event action buttons */
+.event-action-btn {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.event-action-btn i {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.event-action-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Edit icon hover state */
+.event-action-btn.btn-outline-dark:hover {
+    background-color: #212529;
+    border-color: #212529;
+    color: #fff;
+}
+
+/* Delete icon hover state */
+.event-action-btn.btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+/* Keep action controls aligned */
+.my-event-actions {
+    min-width: max-content;
+}
+
+/* Registered attendee count */
+.registered-count {
+    display: inline-flex;
+    min-width: 30px;
+    min-height: 30px;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    background-color: #f1f3f5;
+    color: #343a40;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+/* Improve empty-state icon appearance */
+.my-events-card + .text-center {
+    margin-top: 1rem;
+}
+
+/* Accessible keyboard focus */
+.event-action-btn:focus-visible,
+.my-event-actions .btn:focus-visible {
+    outline: 3px solid rgba(13, 110, 253, 0.35);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .my-events-table thead th,
+    .my-events-table tbody td {
+        padding: 0.8rem;
+    }
+
+    .my-events-table {
+        font-size: 0.9rem;
+    }
+
+    .my-event-actions {
+        gap: 0.4rem !important;
+    }
+
+    .event-action-btn {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .my-events-table tbody tr,
+    .event-action-btn {
+        transition: none;
+    }
+
+    .event-action-btn:hover {
+        transform: none;
+    }
+}
