@@ -1,4 +1,3 @@
-
 using System.Security.Claims;
 using EventHub.Data;
 using EventHub.Models;
@@ -27,7 +26,9 @@ public class DashboardController : Controller
             return Forbid();
         }
 
-        DateTime now = DateTime.Now;
+        // Use UTC because PostgreSQL timestamp with time zone
+        // expects UTC DateTime values when queried through Npgsql.
+        DateTime now = DateTime.UtcNow;
 
         // Statistics and recent events for an Organizer.
         if (User.IsInRole("Organizer"))

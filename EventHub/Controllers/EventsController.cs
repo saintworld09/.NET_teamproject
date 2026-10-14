@@ -1,4 +1,3 @@
-
 using System.Security.Claims;
 using EventHub.Data;
 using EventHub.Models;
@@ -14,142 +13,159 @@ public class EventsController : Controller
 {
     private readonly EventHubContext _context;
 
+    // Nigeria uses West Africa Time (UTC+1).
+    private static readonly TimeZoneInfo EventTimeZone =
+        TimeZoneInfo.FindSystemTimeZoneById(
+            OperatingSystem.IsWindows()
+                ? "W. Central Africa Standard Time"
+                : "Africa/Lagos");
+
     public EventsController(EventHubContext context)
     {
         _context = context;
     }
 
-// Anyone can browse, search, filter, and sort events.
-[AllowAnonymous]
-[HttpGet]
-public async Task<IActionResult> Index(
-    string? searchTerm,
-    string? status,
-    string? sortBy)
-{
-    DateTime now = DateTime.Now;
-
-    searchTerm = searchTerm?.Trim();
-
-    status = string.IsNullOrWhiteSpace(status)
-        ? "all"
-        : status.Trim().ToLowerInvariant();
-
-    sortBy = string.IsNullOrWhiteSpace(sortBy)
-        ? "date-asc"
-        : sortBy.Trim().ToLowerInvariant();
-
-    // Start with all events and include the data needed by the cards.
-    var query = _context.Events
-        .AsNoTracking()
-        .Include(e => e.Category)
-        .Include(e => e.Organizer)
-        .Include(e => e.Registrations)
-        .AsQueryable();
-
-    // Search event title, description, location, category, and organizer.
-    if (!string.IsNullOrWhiteSpace(searchTerm))
+    // Convert the current UTC time to the event's local time zone.
+    private static DateTime GetLocalNow()
     {
-        query = query.Where(e =>
-            e.Title.Contains(searchTerm) ||
-            e.Description.Contains(searchTerm) ||
-            e.Location.Contains(searchTerm) ||
-            (e.Category != null &&
-                e.Category.Name.Contains(searchTerm)) ||
-            (e.Organizer != null &&
-                (e.Organizer.FirstName + " " +
-                 e.Organizer.LastName).Contains(searchTerm)) ||
-            (e.Organizer != null &&
-                e.Organizer.FirstName.Contains(searchTerm)) ||
-            (e.Organizer != null &&
-                e.Organizer.LastName.Contains(searchTerm)));
+        return TimeZoneInfo.ConvertTimeFromUtc(
+            DateTime.UtcNow,
+            EventTimeZone);
     }
 
-    // Filter using the same status categories displayed on the cards.
-    switch (status)
+    // Treat an HTML date/time input as Lagos local time and convert it to UTC.
+    private static DateTime ConvertEventTimeToUtc(DateTime localDateTime)
     {
-        case "upcoming":
-            query = query.Where(e =>
-                e.Status != "Cancelled" &&
-                e.EventDate > now &&
-                e.Registrations.Count(r =>
-                    r.Status == "Registered") < e.Capacity);
-            break;
+        DateTime unspecifiedLocalTime = DateTime.SpecifyKind(
+            localDateTime,
+            DateTimeKind.Unspecified);
 
-        case "full":
-            query = query.Where(e =>
-                e.Status != "Cancelled" &&
-                e.EventDate > now &&
-                e.Registrations.Count(r =>
-                    r.Status == "Registered") >= e.Capacity);
-            break;
-
-        case "past":
-            query = query.Where(e =>
-                e.Status != "Cancelled" &&
-                e.EventDate <= now);
-            break;
-
-        case "cancelled":
-            query = query.Where(e =>
-                e.Status == "Cancelled");
-            break;
-
-        default:
-            status = "all";
-            break;
+        return TimeZoneInfo.ConvertTimeToUtc(
+            unspecifiedLocalTime,
+            EventTimeZone);
     }
 
-    // Sort the matching results.
-    switch (sortBy)
+    // Anyone can browse, search, filter, and sort events.
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<IActionResult> Index(
+        string? searchTerm,
+        string? status,
+        string? sortBy)
     {
-        case "date-desc":
-            query = query
-                .OrderByDescending(e => e.EventDate)
-                .ThenBy(e => e.Title);
-            break;
+        DateTime nowUtc = DateTime.UtcNow;
 
-        case "title":
-            query = query
-                .OrderBy(e => e.Title)
-                .ThenBy(e => e.EventDate);
-            break;
+        searchTerm = searchTerm?.Trim();
 
-        case "status":
-            query = query
-                .OrderBy(e =>
-                    e.Status == "Cancelled" ? 3 :
-                    e.EventDate <= now ? 2 :
+        status = string.IsNullOrWhiteSpace(status)
+            ? "all"
+            : status.Trim().ToLowerInvariant();
+
+        sortBy = string.IsNullOrWhiteSpace(sortBy)
+            ? "date-asc"
+            : sortBy.Trim().ToLowerInvariant();
+
+        var query = _context.Events
+            .AsNoTracking()
+            .Include(e => e.Category)
+            .Include(e => e.Organizer)
+            .Include(e => e.Registrations)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(e =>
+                e.Title.Contains(searchTerm) ||
+                e.Description.Contains(searchTerm) ||
+                e.Location.Contains(searchTerm) ||
+                (e.Category != null &&
+                    e.Category.Name.Contains(searchTerm)) ||
+                (e.Organizer != null &&
+                    (e.Organizer.FirstName + " " +
+                     e.Organizer.LastName).Contains(searchTerm)) ||
+                (e.Organizer != null &&
+                    e.Organizer.FirstName.Contains(searchTerm)) ||
+                (e.Organizer != null &&
+                    e.Organizer.LastName.Contains(searchTerm)));
+        }
+
+        switch (status)
+        {
+            case "upcoming":
+                query = query.Where(e =>
+                    e.Status != "Cancelled" &&
+                    e.EventDate > nowUtc &&
                     e.Registrations.Count(r =>
-                        r.Status == "Registered") >= e.Capacity ? 1 : 0)
-                .ThenBy(e => e.EventDate)
-                .ThenBy(e => e.Title);
-            break;
+                        r.Status == "Registered") < e.Capacity);
+                break;
 
-        default:
-            sortBy = "date-asc";
-            query = query
-                .OrderBy(e => e.EventDate)
-                .ThenBy(e => e.Title);
-            break;
+            case "full":
+                query = query.Where(e =>
+                    e.Status != "Cancelled" &&
+                    e.EventDate > nowUtc &&
+                    e.Registrations.Count(r =>
+                        r.Status == "Registered") >= e.Capacity);
+                break;
+
+            case "past":
+                query = query.Where(e =>
+                    e.Status != "Cancelled" &&
+                    e.EventDate <= nowUtc);
+                break;
+
+            case "cancelled":
+                query = query.Where(e =>
+                    e.Status == "Cancelled");
+                break;
+
+            default:
+                status = "all";
+                break;
+        }
+
+        switch (sortBy)
+        {
+            case "date-desc":
+                query = query
+                    .OrderByDescending(e => e.EventDate)
+                    .ThenBy(e => e.Title);
+                break;
+
+            case "title":
+                query = query
+                    .OrderBy(e => e.Title)
+                    .ThenBy(e => e.EventDate);
+                break;
+
+            case "status":
+                query = query
+                    .OrderBy(e =>
+                        e.Status == "Cancelled" ? 3 :
+                        e.EventDate <= nowUtc ? 2 :
+                        e.Registrations.Count(r =>
+                            r.Status == "Registered") >= e.Capacity ? 1 : 0)
+                    .ThenBy(e => e.EventDate)
+                    .ThenBy(e => e.Title);
+                break;
+
+            default:
+                sortBy = "date-asc";
+                query = query
+                    .OrderBy(e => e.EventDate)
+                    .ThenBy(e => e.Title);
+                break;
+        }
+
+        var events = await query.ToListAsync();
+
+        ViewBag.SearchTerm = searchTerm ?? string.Empty;
+        ViewBag.SelectedStatus = status;
+        ViewBag.SelectedSort = sortBy;
+        ViewBag.ResultCount = events.Count;
+        ViewBag.TotalEvents = await _context.Events.CountAsync();
+
+        return View(events);
     }
-
-    var events = await query.ToListAsync();
-
-    // Values used to keep the search controls selected after submission.
-    ViewBag.SearchTerm = searchTerm ?? string.Empty;
-    ViewBag.SelectedStatus = status;
-    ViewBag.SelectedSort = sortBy;
-    ViewBag.ResultCount = events.Count;
-    ViewBag.TotalEvents = await _context.Events.CountAsync();
-
-    return View(events);
-}
-
-
-
-
-
 
     // Only organizers can open the Create Event form.
     [Authorize(Roles = "Organizer")]
@@ -170,12 +186,19 @@ public async Task<IActionResult> Index(
     public async Task<IActionResult> Create(
         CreateEventViewModel viewModel)
     {
-        if (viewModel.EventDate.HasValue &&
-            viewModel.EventDate.Value <= DateTime.Now)
+        DateTime? eventDateUtc = null;
+
+        if (viewModel.EventDate.HasValue)
         {
-            ModelState.AddModelError(
-                nameof(viewModel.EventDate),
-                "The event date and time must be in the future.");
+            eventDateUtc = ConvertEventTimeToUtc(
+                viewModel.EventDate.Value);
+
+            if (eventDateUtc.Value <= DateTime.UtcNow)
+            {
+                ModelState.AddModelError(
+                    nameof(viewModel.EventDate),
+                    "The event date and time must be in the future.");
+            }
         }
 
         bool categoryExists = await _context.Categories
@@ -203,8 +226,9 @@ public async Task<IActionResult> Index(
         }
 
         bool organizerExists = await _context.Users
-            .AnyAsync(u => u.UserId == organizerId &&
-                           u.Role == "Organizer");
+            .AnyAsync(u =>
+                u.UserId == organizerId &&
+                u.Role == "Organizer");
 
         if (!organizerExists)
         {
@@ -215,7 +239,7 @@ public async Task<IActionResult> Index(
         {
             Title = viewModel.Title.Trim(),
             Description = viewModel.Description.Trim(),
-            EventDate = viewModel.EventDate!.Value,
+            EventDate = eventDateUtc!.Value,
             Location = viewModel.Location.Trim(),
             Capacity = viewModel.Capacity,
             CategoryId = viewModel.CategoryId,
@@ -225,6 +249,7 @@ public async Task<IActionResult> Index(
         };
 
         _context.Events.Add(newEvent);
+
         await _context.SaveChangesAsync();
 
         TempData["SuccessMessage"] =
@@ -232,10 +257,6 @@ public async Task<IActionResult> Index(
 
         return RedirectToAction(nameof(Index));
     }
-
-
-
-
 
     // Display the full details of an event.
     [AllowAnonymous]
@@ -270,8 +291,9 @@ public async Task<IActionResult> Index(
         if (int.TryParse(userIdClaim, out int userId))
         {
             var activeRegistration = eventItem.Registrations
-                .Where(r => r.UserId == userId &&
-                            r.Status == "Registered")
+                .Where(r =>
+                    r.UserId == userId &&
+                    r.Status == "Registered")
                 .OrderByDescending(r => r.RegisteredAt)
                 .FirstOrDefault();
 
@@ -325,7 +347,7 @@ public async Task<IActionResult> Index(
                 return RedirectToAction(nameof(Details), new { id });
             }
 
-            if (eventItem.EventDate <= DateTime.Now)
+            if (eventItem.EventDate <= DateTime.UtcNow)
             {
                 await transaction.RollbackAsync();
 
@@ -392,7 +414,6 @@ public async Task<IActionResult> Index(
     }
 
     // Attendees can cancel their own active registration.
-    // The registration record is preserved with Status = "Cancelled".
     [Authorize(Roles = "Attendee")]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -621,7 +642,11 @@ public async Task<IActionResult> Index(
         {
             Title = eventItem.Title,
             Description = eventItem.Description,
-            EventDate = eventItem.EventDate,
+            EventDate = TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.SpecifyKind(
+                    eventItem.EventDate,
+                    DateTimeKind.Utc),
+                EventTimeZone),
             Location = eventItem.Location,
             Capacity = eventItem.Capacity,
             CategoryId = eventItem.CategoryId
@@ -669,12 +694,19 @@ public async Task<IActionResult> Index(
             return RedirectToAction(nameof(MyEvents));
         }
 
-        if (viewModel.EventDate.HasValue &&
-            viewModel.EventDate.Value <= DateTime.Now)
+        DateTime? eventDateUtc = null;
+
+        if (viewModel.EventDate.HasValue)
         {
-            ModelState.AddModelError(
-                nameof(viewModel.EventDate),
-                "The event date and time must be in the future.");
+            eventDateUtc = ConvertEventTimeToUtc(
+                viewModel.EventDate.Value);
+
+            if (eventDateUtc.Value <= DateTime.UtcNow)
+            {
+                ModelState.AddModelError(
+                    nameof(viewModel.EventDate),
+                    "The event date and time must be in the future.");
+            }
         }
 
         bool categoryExists = await _context.Categories
@@ -695,7 +727,7 @@ public async Task<IActionResult> Index(
 
         eventItem.Title = viewModel.Title.Trim();
         eventItem.Description = viewModel.Description.Trim();
-        eventItem.EventDate = viewModel.EventDate!.Value;
+        eventItem.EventDate = eventDateUtc!.Value;
         eventItem.Location = viewModel.Location.Trim();
         eventItem.Capacity = viewModel.Capacity;
         eventItem.CategoryId = viewModel.CategoryId;
@@ -824,7 +856,7 @@ public async Task<IActionResult> Index(
             return RedirectToAction(nameof(MyEvents));
         }
 
-        if (eventItem.EventDate <= DateTime.Now)
+        if (eventItem.EventDate <= DateTime.UtcNow)
         {
             TempData["ErrorMessage"] =
                 "An event that has already started or passed cannot be cancelled here.";

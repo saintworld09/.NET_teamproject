@@ -1,0 +1,11 @@
+
+bin/
+obj/
+.env
+**/.env
+eventhub.db
+*.db-shm
+*.db-wal
+.git/
+.vs/
+.vscode/
